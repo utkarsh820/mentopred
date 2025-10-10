@@ -1,0 +1,17 @@
+xgboost
+lightgbm
+catboost
+
+pandas
+numpy
+
+matplotlib
+seaborn
+
+scikit-learn
+joblib
+tqdm
+
+mlflow
+
+ipykernel

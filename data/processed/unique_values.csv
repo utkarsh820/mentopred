@@ -1,0 +1,49 @@
+gender,country,state,self_employed,family_history,treatment,work_interfere,no_employees,remote_work,tech_company,benefits,care_options,wellness_program,seek_help,anonymity,leave,mental_health_consequence,phys_health_consequence,coworkers,supervisor,mental_health_interview,phys_health_interview,mental_vs_physical
+female,United States,IL,,No,Yes,Often,6-25,No,Yes,Yes,Not sure,No,Yes,Yes,Somewhat easy,No,No,Some of them,Yes,No,Maybe,Yes
+male,Canada,IN,Yes,Yes,No,Rarely,More than 1000,Yes,No,Don't know,No,Don't know,Don't know,Don't know,Don't know,Maybe,Yes,No,No,Yes,No,Don't know
+male-ish,United Kingdom,,No,END--,END--,Never,26-100,END--,END--,No,Yes,Yes,No,No,Somewhat difficult,Yes,Maybe,Yes,Some of them,Maybe,Yes,No
+maile,Bulgaria,TX,END--,END--,END--,Sometimes,100-500,END--,END--,END--,END--,END--,END--,END--,Very difficult,END--,END--,END--,END--,END--,END--,END--
+trans-female,France,TN,END--,END--,END--,,1-5,END--,END--,END--,END--,END--,END--,END--,Very easy,END--,END--,END--,END--,END--,END--,END--
+cis female,Portugal,MI,END--,END--,END--,END--,500-1000,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+something kinda male?,Netherlands,OH,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+cis male,Switzerland,CA,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+woman,Poland,CT,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+mal,Australia,MD,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+male (cis),Germany,NY,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+queer/she/they,Russia,NC,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+non-binary,Mexico,MA,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+femake,Brazil,IA,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+make,Slovenia,PA,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+nah,Costa Rica,WA,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+all,Austria,WI,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+enby,Ireland,UT,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+fluid,India,NM,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+genderqueer,South Africa,OR,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+female ,Italy,FL,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+androgyne,Sweden,MN,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+agender,Colombia,MO,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+cis-female/femme,Latvia,AZ,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+guy (-ish) ^_^,Romania,CO,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+male leaning androgynous,Belgium,GA,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+male ,New Zealand,DC,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+man,Zimbabwe,NE,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+trans woman,Spain,WV,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+msle,Finland,OK,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+neuter,Uruguay,KS,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+female (trans),Israel,VA,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+queer,Bosnia and Herzegovina,NH,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+female (cis),Hungary,KY,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+mail,Singapore,AL,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+a little about you,Japan,NV,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+malr,Nigeria,NJ,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+p,Croatia,SC,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+femail,Norway,VT,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+cis man,Thailand,SD,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+"ostensibly male, unsure what that really means",Denmark,ID,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+END--,"Bahamas, The",MS,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+END--,Greece,RI,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+END--,Moldova,WY,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+END--,Georgia,LA,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+END--,China,ME,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+END--,Czech Republic,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--
+END--,Philippines,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--,END--

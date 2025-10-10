@@ -1,0 +1,29 @@
+[project]
+name = "mentopred"
+version = "0.1"
+description = "This package was build to solve the mental_health_problems in tech industry."
+authors = [
+    {name = "Utkarsh Pandey"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = "3.13.7"
+dependencies = [
+    "xgboost (>=3.0.5,<4.0.0)",
+    "lightgbm (>=4.6.0,<5.0.0)",
+    "catboost (>=1.2.8,<2.0.0)",
+    "pandas (>=2.3.3,<3.0.0)",
+    "numpy (>=2.3.3,<3.0.0)",
+    "matplotlib (>=3.10.7,<4.0.0)",
+    "seaborn (>=0.13.2,<0.14.0)",
+    "scikit-learn (>=1.7.2,<2.0.0)",
+    "joblib (>=1.5.2,<2.0.0)",
+    "tqdm (>=4.67.1,<5.0.0)",
+    "ipykernel (>=6.30.1,<7.0.0)",
+    "mlflow (>=3.4.0,<4.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
