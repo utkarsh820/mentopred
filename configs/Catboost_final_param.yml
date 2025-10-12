@@ -1,0 +1,8 @@
+catboost:
+  iterations: 782
+  depth: 3
+  learning_rate: 0.03386555433396082
+  l2_leaf_reg: 0.2571482151710551
+  border_count: 173
+  bagging_temperature: 0.8625136548672491
+  random_strength: 0.8313419369418872

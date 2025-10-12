@@ -243,3 +243,8 @@ figures/
 # Experiment tracking
 experiments/
 checkpoints/
+
+test.ipynb
+
+final_pipeline.pkl
+encoding_pipeline.pkl
