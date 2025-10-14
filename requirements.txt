@@ -13,5 +13,5 @@ joblib
 tqdm
 
 mlflow
-
+streamlit>=1.22.0
 ipykernel
