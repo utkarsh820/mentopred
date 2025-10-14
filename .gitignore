@@ -248,3 +248,6 @@ test.ipynb
 
 final_pipeline.pkl
 encoding_pipeline.pkl
+
+ !.dvc
+!*.dvc
