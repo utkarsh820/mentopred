@@ -1,0 +1,37 @@
+name: Deploy Streamlit App
+
+on:
+  push:
+    branches: [ main ]  # auto-deploy on push to main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          lfs: true  # ensures DVC files handled properly
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Configure DVC and Backblaze
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          B2_ENDPOINT_URL: ${{ secrets.B2_ENDPOINT_URL }}
+        run: |
+          dvc remote modify b2remote endpointurl $B2_ENDPOINT_URL
+          poetry run dvc pull -r b2remote
+
+      - name: Verify model presence
+        run: ls -lh models/
+
+      - name: Deploy to Streamlit Cloud
+        run: echo "Ready to deploy via Streamlit Cloud (auto build triggers on push)"
