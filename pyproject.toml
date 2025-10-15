@@ -6,8 +6,8 @@ authors = [
     {name = "Utkarsh Pandey"}
 ]
 license = {text = "MIT"}
-readme = "../README.md"
-requires-python = "3.13.7"
+readme = "README.md"
+requires-python = ">=3.9,<4.0"
 dependencies = [
     "xgboost (>=3.0.5,<4.0.0)",
     "lightgbm (>=4.6.0,<5.0.0)",
@@ -28,6 +28,11 @@ dependencies = [
     "streamlit (>=1.50.0,<2.0.0)"
 ]
 
+
+[tool.poetry]
+packages = [
+    {include = "src"}
+]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

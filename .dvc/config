@@ -3,5 +3,3 @@
 ['remote "b2remote"']
     url = s3://dvc-mlops
     endpointurl = https://s3.eu-central-003.backblazeb2.com
-    access_key_id = 00314bbcd21575d0000000001
-    secret_access_key = K003XJhNA4t8H4QuD4Z6t2zgm+yDPSs
