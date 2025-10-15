@@ -90,42 +90,95 @@ def load_model():
     try:
         model_path = os.path.join('models', 'final_model.pkl')
         
-        # Check if the model file exists, if not, try to pull it using DVC
+        # Check if the model file exists, if not, try to use alternative approaches
         if not os.path.exists(model_path):
-            st.warning("Model file not found. Attempting to pull from DVC...")
-            try:
-                import subprocess
-                import sys
-                
-                # Try to pull the model file using DVC
-                dvc_result = subprocess.run(
-                    ["dvc", "pull", "models/final_model.pkl"],
-                    capture_output=True,
-                    text=True,
-                    check=False
-                )
-                
-                if dvc_result.returncode == 0:
-                    st.success("Successfully pulled model from DVC!")
-                else:
-                    st.error(f"Failed to pull model: {dvc_result.stderr}")
+            st.warning("Model file not found. Checking alternatives...")
+            
+            # 1. First, try looking for the model in alternative locations
+            alternative_paths = [
+                os.path.join(os.getcwd(), 'models', 'final_model.pkl'),
+                os.path.join('..', 'models', 'final_model.pkl'),
+                os.path.join('.', 'final_model.pkl')
+            ]
+            
+            for alt_path in alternative_paths:
+                if os.path.exists(alt_path):
+                    st.success(f"Found model at alternative location: {alt_path}")
+                    model_path = alt_path
+                    break
+            
+            # 2. If still not found, try to download from bucket
+            if not os.path.exists(model_path):
+                try:
+                    st.info("Attempting to download model from cloud storage bucket...")
                     
-                    # Check if we're on Streamlit Cloud
-                    if os.environ.get('STREAMLIT_SHARING'):
-                        st.info("Running on Streamlit Cloud. Using a demo model.")
+                    # Make sure the models directory exists
+                    os.makedirs(os.path.dirname(model_path), exist_ok=True)
+                    
+                    # Try to download using boto3 if AWS/S3 credentials are available
+                    try:
+                        import boto3
+                        from botocore.exceptions import ClientError
+                        
+                        # Get credentials from environment or Streamlit secrets
+                        aws_access_key = os.environ.get('AWS_ACCESS_KEY_ID')
+                        aws_secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+                        endpoint_url = os.environ.get('B2_ENDPOINT_URL')
+                        
+                        # Check if we can get from Streamlit secrets
+                        if not aws_access_key and hasattr(st, 'secrets'):
+                            aws_access_key = st.secrets.get("b2remote", {}).get("AWS_ACCESS_KEY_ID")
+                            aws_secret_key = st.secrets.get("b2remote", {}).get("AWS_SECRET_ACCESS_KEY")
+                            endpoint_url = st.secrets.get("b2remote", {}).get("B2_ENDPOINT_URL")
+                        
+                        if aws_access_key and aws_secret_key:
+                            # Create an S3 client
+                            s3_client = boto3.client(
+                                's3',
+                                aws_access_key_id=aws_access_key,
+                                aws_secret_access_key=aws_secret_key,
+                                endpoint_url=endpoint_url
+                            )
+                            
+                            # Download the file
+                            s3_client.download_file(
+                                'dvc-mlops',  # bucket name
+                                'models/final_model.pkl',  # s3 object path
+                                model_path  # local file path
+                            )
+                            
+                            st.success("Successfully downloaded model from cloud storage!")
+                        else:
+                            st.error("AWS credentials not available")
+                            return create_demo_model()
+                            
+                    except ImportError:
+                        st.error("boto3 not installed. Cannot download from S3.")
                         return create_demo_model()
-            except Exception as e:
-                st.error(f"Error pulling model with DVC: {str(e)}")
-                if os.environ.get('STREAMLIT_SHARING'):
-                    st.info("Running on Streamlit Cloud. Using a demo model.")
+                    except ClientError as e:
+                        st.error(f"Error downloading from S3: {str(e)}")
+                        return create_demo_model()
+                    except Exception as e:
+                        st.error(f"Unexpected error downloading model: {str(e)}")
+                        return create_demo_model()
+                
+                except Exception as e:
+                    st.error(f"Error setting up model download: {str(e)}")
                     return create_demo_model()
         
-        with open(model_path, 'rb') as f:
-            pipeline = pickle.load(f)
-        
-        # Debug information about the pipeline
-        if isinstance(pipeline, Pipeline):
-            st.success(f"Successfully loaded pipeline with {len(pipeline.steps)} steps")
+        try:
+            with open(model_path, 'rb') as f:
+                pipeline = pickle.load(f)
+            
+            # Debug information about the pipeline
+            if isinstance(pipeline, Pipeline):
+                st.success(f"Successfully loaded pipeline with {len(pipeline.steps)} steps")
+            else:
+                st.error(f"Loaded object is not a Pipeline. Got {type(pipeline)}")
+                return create_demo_model()
+        except Exception as e:
+            st.error(f"Error loading model from {model_path}: {str(e)}")
+            return create_demo_model()
             
             # Show pipeline steps in debug mode
             if st.session_state.get('debug_mode', False):
