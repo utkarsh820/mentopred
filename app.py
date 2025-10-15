@@ -69,6 +69,62 @@ def create_demo_model():
         ('classifier', classifier)
     ])
     
+    # Create a sample dataset to fit the pipeline
+    import numpy as np
+    import pandas as pd
+    
+    # Generate some random data to fit the model
+    n_samples = 100
+    np.random.seed(42)
+    
+    # Create a sample DataFrame with the expected columns
+    sample_data = {
+        'Age': np.random.randint(18, 65, n_samples),
+        'Gender': np.random.choice(['male', 'female', 'other'], n_samples),
+        'Country': np.random.choice(['USA', 'UK', 'Canada', 'Germany'], n_samples),
+        'self_employed': np.random.choice(['Yes', 'No'], n_samples),
+        'family_history': np.random.choice(['Yes', 'No'], n_samples),
+        'work_interfere': np.random.choice(['Often', 'Rarely', 'Never', 'Sometimes'], n_samples),
+        'no_employees': np.random.choice(['1-5', '6-25', '26-100', '100-500'], n_samples),
+        'remote_work': np.random.choice(['Yes', 'No'], n_samples),
+        'tech_company': np.random.choice(['Yes', 'No'], n_samples),
+        'benefits': np.random.choice(['Yes', 'No', "Don't know"], n_samples),
+        'care_options': np.random.choice(['Yes', 'No', 'Not sure'], n_samples),
+        'wellness_program': np.random.choice(['Yes', 'No', "Don't know"], n_samples),
+        'seek_help': np.random.choice(['Yes', 'No', "Don't know"], n_samples),
+        'anonymity': np.random.choice(['Yes', 'No', "Don't know"], n_samples),
+        'leave': np.random.choice(['Very easy', 'Somewhat easy', 'Somewhat difficult', 'Very difficult'], n_samples),
+        'mental_health_consequence': np.random.choice(['Yes', 'No', 'Maybe'], n_samples),
+        'phys_health_consequence': np.random.choice(['Yes', 'No', 'Maybe'], n_samples),
+        'coworkers': np.random.choice(['Yes', 'No', 'Some of them'], n_samples),
+        'supervisor': np.random.choice(['Yes', 'No', 'Some of them'], n_samples),
+        'mental_health_interview': np.random.choice(['Yes', 'No', 'Maybe'], n_samples),
+        'phys_health_interview': np.random.choice(['Yes', 'No', 'Maybe'], n_samples),
+        'mental_vs_physical': np.random.choice(['Yes', 'No', "Don't know"], n_samples),
+        'obs_consequence': np.random.choice(['Yes', 'No'], n_samples)
+    }
+    sample_df = pd.DataFrame(sample_data)
+    
+    # Generate some random target values
+    y = np.random.randint(0, 2, n_samples)
+    
+    try:
+        # Set the expected columns in the encoder
+        pipeline.steps[0][1].expected_columns = list(sample_df.columns)
+        pipeline.steps[0][1].binary_cols = [
+            'self_employed', 'family_history', 'remote_work', 'tech_company',
+            'benefits', 'care_options', 'wellness_program', 'seek_help', 'anonymity',
+            'mental_health_consequence', 'phys_health_consequence', 'coworkers', 'supervisor',
+            'mental_health_interview', 'phys_health_interview', 'mental_vs_physical', 'obs_consequence'
+        ]
+        
+        # Fit the pipeline
+        pipeline.fit(sample_df, y)
+        st.success("Successfully fitted the demo model")
+    except Exception as e:
+        st.error(f"Error fitting demo model: {str(e)}")
+    
+    
     # Set some basic attributes for the encoder to work with our app
     pipeline.steps[0][1].expected_columns = [
         'Age', 'Gender', 'Country', 'self_employed', 'family_history',
