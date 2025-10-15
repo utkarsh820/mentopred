@@ -15,13 +15,30 @@ jobs:
         with:
           lfs: true  # ensures DVC files handled properly
 
-      - name: Set up Python 3.11
+      - name: Set up Python 3.13
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: "3.13"
+          cache: 'pip'
 
       - name: Install Poetry
         run: pip install poetry
+
+      - name: Configure Poetry
+        run: |
+          poetry config virtualenvs.create false
+          poetry config installer.max-workers 10
+
+      - name: Cache Poetry dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry
+          key: ${{ runner.os }}-poetry-python3.13-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-python3.13-
+
+      - name: Update lock file
+        run: poetry lock
 
       - name: Install dependencies
         run: poetry install --no-interaction
