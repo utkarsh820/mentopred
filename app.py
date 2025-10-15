@@ -28,8 +28,25 @@ class MentoPredEncoder(BaseEstimator, TransformerMixin):
         return self
     
     def transform(self, X):
-        # This will be implemented in our custom encoding function
-        return X
+        """Transform the input data X according to the encoder settings.
+        In this demo implementation, we'll just handle the basic preprocessing.
+        """
+        X_transformed = X.copy()
+        
+        # Handle expected columns
+        if self.expected_columns:
+            missing_cols = set(self.expected_columns) - set(X_transformed.columns)
+            # Add missing columns with default values
+            for col in missing_cols:
+                if col in self.binary_cols:
+                    X_transformed[col] = 0  # Default for binary columns
+                else:
+                    X_transformed[col] = 0  # Default for other columns
+            
+            # Reorder columns to match expected order
+            X_transformed = X_transformed[self.expected_columns]
+        
+        return X_transformed
     
     def fit_transform(self, X, y=None):
         return self.fit(X).transform(X)
@@ -187,20 +204,50 @@ def load_model():
                     st.write(f"Step {i}: {name} - {type(step)}")
             
             # Extract the model from the pipeline
-            # The pipeline structure is ('encoder', string_path), ('model', actual_model)
-            if len(pipeline.steps) > 1:
-                model = pipeline.steps[1][1]  # Get the actual model (second step)
-                st.success("Model extracted successfully from pipeline")
+            # Check if the encoder step is a string path, and if so, load the encoder
+            if len(pipeline.steps) > 0 and isinstance(pipeline.steps[0][1], str):
+                encoder_path = pipeline.steps[0][1]
+                st.warning(f"Encoder is a path reference: {encoder_path}")
                 
-                # Debug model info
-                if st.session_state.get('debug_mode', False):
-                    if hasattr(model, 'feature_names_in_'):
-                        st.write("Model expected features:", model.feature_names_in_.tolist())
+                # Try to load the encoder from the referenced path
+                try:
+                    # Adjust the path if it's relative
+                    if encoder_path.startswith('..'):
+                        encoder_path = encoder_path.replace('..', '.')
                     
-                return model
-            else:
-                st.error("Pipeline doesn't have the expected structure")
-                return None
+                    if not os.path.isabs(encoder_path):
+                        encoder_path = os.path.join(os.getcwd(), encoder_path.lstrip('./'))
+                    
+                    st.info(f"Attempting to load encoder from: {encoder_path}")
+                    
+                    if os.path.exists(encoder_path):
+                        with open(encoder_path, 'rb') as f:
+                            encoder = pickle.load(f)
+                        
+                        # Replace the string path with the actual encoder object
+                        pipeline.steps[0] = (pipeline.steps[0][0], encoder)
+                        st.success("Successfully loaded and integrated encoder into pipeline")
+                    else:
+                        st.error(f"Encoder file not found: {encoder_path}")
+                        # Use our demo encoder
+                        pipeline.steps[0] = (pipeline.steps[0][0], MentoPredEncoder())
+                        st.warning("Using demo encoder instead")
+                except Exception as e:
+                    st.error(f"Error loading encoder: {str(e)}")
+                    # Use our demo encoder
+                    pipeline.steps[0] = (pipeline.steps[0][0], MentoPredEncoder())
+                    st.warning("Using demo encoder due to error")
+            
+            # Return the entire pipeline to ensure we have all transformation steps
+            st.success("Successfully loaded the model pipeline")
+            
+            # Debug model info
+            if st.session_state.get('debug_mode', False):
+                st.write("Pipeline steps:")
+                for i, (name, step) in enumerate(pipeline.steps):
+                    st.write(f"Step {i}: {name} - {type(step)}")
+                    
+            return pipeline
         else:
             st.warning("Loaded object is not a Pipeline, using it directly as model")
             return pipeline
