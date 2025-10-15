@@ -75,4 +75,5 @@ If you want to retrain the model or modify the application, refer to the Jupyter
 
 ## License
 
+
 This project is licensed under the terms of the license included in the repository.
