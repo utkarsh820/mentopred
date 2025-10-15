@@ -5,6 +5,8 @@ import numpy as np
 import streamlit as st
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import StandardScaler
 
 # Define the custom encoder class to match what was used in training
 class MentoPredEncoder(BaseEstimator, TransformerMixin):
@@ -32,6 +34,49 @@ class MentoPredEncoder(BaseEstimator, TransformerMixin):
     def fit_transform(self, X, y=None):
         return self.fit(X).transform(X)
 
+# Function to create a simple demo model when the real model isn't available
+def create_demo_model():
+    """Create a simple demo model for when DVC can't pull the real model"""
+    # Create a simple pipeline with our encoder and a random forest classifier
+    encoder = MentoPredEncoder()
+    scaler = StandardScaler()
+    classifier = RandomForestClassifier(
+        n_estimators=100, 
+        max_depth=10,
+        random_state=42
+    )
+    
+    pipeline = Pipeline([
+        ('encoder', encoder),
+        ('scaler', scaler),
+        ('classifier', classifier)
+    ])
+    
+    # Set some basic attributes for the encoder to work with our app
+    pipeline.steps[0][1].expected_columns = [
+        'Age', 'Gender', 'Country', 'self_employed', 'family_history',
+        'treatment', 'work_interfere', 'no_employees', 'remote_work',
+        'tech_company', 'benefits', 'care_options', 'wellness_program',
+        'seek_help', 'anonymity', 'leave', 'mental_health_consequence',
+        'phys_health_consequence', 'coworkers', 'supervisor', 
+        'mental_health_interview', 'phys_health_interview', 'mental_vs_physical',
+        'obs_consequence'
+    ]
+    
+    pipeline.steps[0][1].binary_cols = [
+        'self_employed', 'family_history', 'treatment', 'remote_work',
+        'tech_company', 'benefits', 'care_options', 'wellness_program',
+        'seek_help', 'anonymity', 'mental_health_consequence',
+        'phys_health_consequence', 'coworkers', 'supervisor',
+        'mental_health_interview', 'phys_health_interview', 'mental_vs_physical',
+        'obs_consequence'
+    ]
+    
+    # Log what we're doing
+    st.warning("Using a demo model. Predictions will be random and not accurate!")
+    
+    return pipeline
+
 # Set page configuration
 st.set_page_config(
     page_title="MentoPred - Mental Health Treatment Predictor",
@@ -44,6 +89,36 @@ st.set_page_config(
 def load_model():
     try:
         model_path = os.path.join('models', 'final_model.pkl')
+        
+        # Check if the model file exists, if not, try to pull it using DVC
+        if not os.path.exists(model_path):
+            st.warning("Model file not found. Attempting to pull from DVC...")
+            try:
+                import subprocess
+                import sys
+                
+                # Try to pull the model file using DVC
+                dvc_result = subprocess.run(
+                    ["dvc", "pull", "models/final_model.pkl"],
+                    capture_output=True,
+                    text=True,
+                    check=False
+                )
+                
+                if dvc_result.returncode == 0:
+                    st.success("Successfully pulled model from DVC!")
+                else:
+                    st.error(f"Failed to pull model: {dvc_result.stderr}")
+                    
+                    # Check if we're on Streamlit Cloud
+                    if os.environ.get('STREAMLIT_SHARING'):
+                        st.info("Running on Streamlit Cloud. Using a demo model.")
+                        return create_demo_model()
+            except Exception as e:
+                st.error(f"Error pulling model with DVC: {str(e)}")
+                if os.environ.get('STREAMLIT_SHARING'):
+                    st.info("Running on Streamlit Cloud. Using a demo model.")
+                    return create_demo_model()
         
         with open(model_path, 'rb') as f:
             pipeline = pickle.load(f)
