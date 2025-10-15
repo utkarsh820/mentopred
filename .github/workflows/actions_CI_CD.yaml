@@ -14,6 +14,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           lfs: true  # ensures DVC files handled properly
+          
+      - name: Set up Python 3.13.7
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13.7
 
       - name: Install Poetry
         run: pip install poetry
