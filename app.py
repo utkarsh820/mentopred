@@ -204,10 +204,15 @@ def load_model():
                             endpoint_url=endpoint_url
                         )
                         
-                        # Try different possible paths for the model file
+                        # For DVC in Backblaze B2, the file is stored with a hash name
+                        # Based on the md5 hash found in your .dvc file: b669f602411a4115ab2ef5fd62f1c845
+                        
+                        # Try different possible paths for the model file, starting with DVC's content-addressable paths
                         possible_paths = [
+                            'files/md5/b6/69f602411a4115ab2ef5fd62f1c845',  # DVC hash path from error message
+                            '.dvc/cache/files/md5/b6/69f602411a4115ab2ef5fd62f1c845',
                             'models/final_model.pkl',
-                            'final_model.pkl', 
+                            'final_model.pkl',
                             'model.pkl',
                             'models/model.pkl',
                         ]
@@ -215,27 +220,30 @@ def load_model():
                         # List bucket contents to find the model file
                         try:
                             st.info("Listing bucket contents to find model file...")
-                            response = s3_client.list_objects_v2(Bucket='dvc-mlops', Prefix='models/')
-                            if 'Contents' in response:
-                                st.write("Files found in bucket:")
-                                found_files = []
-                                for obj in response['Contents']:
-                                    found_files.append(obj['Key'])
-                                    st.write(f"- {obj['Key']}")
-                                
-                                # Look for model files among found files
-                                for path in found_files:
-                                    if path.endswith('.pkl'):
-                                        possible_paths.insert(0, path)  # Add to the front of our list to try first
-                            else:
-                                st.warning("No files found in models/ directory")
-                                
-                            # Try listing the root directory
+                            # Check root directory first to find DVC files
                             response = s3_client.list_objects_v2(Bucket='dvc-mlops', Prefix='')
                             if 'Contents' in response:
                                 st.write("Files found in bucket root:")
-                                for obj in response['Contents'][:10]:  # Show only first 10 files
+                                found_files = []
+                                for obj in response['Contents'][:20]:  # Show more files to find hash path
+                                    found_files.append(obj['Key'])
                                     st.write(f"- {obj['Key']}")
+                                    
+                                    # If we find any files with md5/b6 pattern (DVC hash paths), prioritize them
+                                    if 'md5/b6' in obj['Key']:
+                                        possible_paths.insert(0, obj['Key'])
+                                    
+                            # Also check models directory
+                            response = s3_client.list_objects_v2(Bucket='dvc-mlops', Prefix='models/')
+                            if 'Contents' in response:
+                                st.write("Files found in models directory:")
+                                for obj in response['Contents']:
+                                    found_files.append(obj['Key'])
+                                    st.write(f"- {obj['Key']}")
+                                    if obj['Key'].endswith('.pkl'):
+                                        possible_paths.insert(0, obj['Key'])
+                            else:
+                                st.warning("No files found in models/ directory")
                         except Exception as e:
                             st.error(f"Error listing bucket contents: {str(e)}")
                         
@@ -254,6 +262,22 @@ def load_model():
                                 break
                             except Exception as e:
                                 st.warning(f"Could not download from {path}: {str(e)}")
+                        
+                        # Try one more approach - look for DVC hash directly based on dvc file content
+                        if not success:
+                            try:
+                                # The hash from your .dvc file is b669f602411a4115ab2ef5fd62f1c845
+                                dvc_hash_path = 'files/md5/b6/69f602411a4115ab2ef5fd62f1c845'
+                                st.info(f"Trying direct DVC hash path: {dvc_hash_path}")
+                                s3_client.download_file(
+                                    'dvc-mlops',
+                                    dvc_hash_path,
+                                    model_path
+                                )
+                                st.success(f"Successfully downloaded model using DVC hash path!")
+                                success = True
+                            except Exception as e:
+                                st.warning(f"Could not download using DVC hash path: {str(e)}")
                         
                         if not success:
                             st.error("Failed to download model from any path")
@@ -505,6 +529,49 @@ def predict(input_df, model, debug=False):
         st.error(traceback.format_exc())
         return None
 
+# Function to verify Streamlit secrets configuration
+def verify_secrets():
+    """Verify that all required secrets are correctly configured."""
+    if not hasattr(st, 'secrets'):
+        return {
+            'status': 'warning',
+            'message': "Streamlit secrets not available. This is expected in local development."
+        }
+    
+    required_secrets = [
+        ('b2remote', 'AWS_ACCESS_KEY_ID'),
+        ('b2remote', 'AWS_SECRET_ACCESS_KEY'),
+        ('b2remote', 'B2_ENDPOINT_URL')
+    ]
+    
+    missing = []
+    for section, key in required_secrets:
+        if section not in st.secrets or key not in st.secrets[section]:
+            missing.append(f"{section}.{key}")
+    
+    if missing:
+        return {
+            'status': 'error',
+            'message': f"Missing required secrets: {', '.join(missing)}"
+        }
+    
+    # Check if secret values are empty
+    empty = []
+    for section, key in required_secrets:
+        if st.secrets[section][key] == "":
+            empty.append(f"{section}.{key}")
+    
+    if empty:
+        return {
+            'status': 'error',
+            'message': f"These secrets have empty values: {', '.join(empty)}"
+        }
+    
+    return {
+        'status': 'success',
+        'message': "All required secrets are configured correctly"
+    }
+
 # Main app
 def main():
     # Initialize session state for debug mode if it doesn't exist
@@ -519,6 +586,16 @@ def main():
         
         if debug_mode:
             st.info("Debug mode enabled. You'll see additional technical information.")
+            
+            # Verify secrets in debug mode
+            secrets_status = verify_secrets()
+            st.write("**Secrets Status:**")
+            if secrets_status['status'] == 'success':
+                st.success(secrets_status['message'])
+            elif secrets_status['status'] == 'warning':
+                st.warning(secrets_status['message'])
+            else:
+                st.error(secrets_status['message'])
     
     # Header
     col1, col2, col3 = st.columns([1, 3, 1])
