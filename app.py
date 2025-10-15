@@ -316,31 +316,111 @@ def load_model():
                     encoder_path = pipeline.steps[0][1]
                     st.warning(f"Encoder is a path reference: {encoder_path}")
                     
-                    # Try to load the encoder from the referenced path
+                    # Try to load the encoder from the referenced path, with additional S3 fallback
                     try:
-                        # Adjust the path if it's relative
-                        if encoder_path.startswith('..'):
-                            encoder_path = encoder_path.replace('..', '.')
+                        encoder_file_name = os.path.basename(encoder_path)
+                        st.info(f"Looking for encoder: {encoder_file_name}")
                         
-                        if not os.path.isabs(encoder_path):
-                            encoder_path = os.path.join(os.getcwd(), encoder_path.lstrip('./'))
+                        # First try local paths
+                        local_paths = [
+                            encoder_path,
+                            os.path.join('models', encoder_file_name),
+                            os.path.join(os.getcwd(), 'models', encoder_file_name),
+                            os.path.join('.', encoder_file_name)
+                        ]
                         
-                        st.info(f"Attempting to load encoder from: {encoder_path}")
-                        
-                        if os.path.exists(encoder_path):
-                            with open(encoder_path, 'rb') as f:
-                                encoder = pickle.load(f)
+                        encoder_found = False
+                        for path in local_paths:
+                            if os.path.exists(path):
+                                st.info(f"Found encoder at: {path}")
+                                with open(path, 'rb') as f:
+                                    encoder = pickle.load(f)
+                                encoder_found = True
+                                break
+                                
+                        # If not found locally and we have S3 access, try to download from bucket
+                        if not encoder_found and 's3_client' in locals():
+                            st.info("Trying to download encoder from S3 bucket...")
                             
-                            # Replace the string path with the actual encoder object
+                            encoder_local_path = os.path.join(os.path.dirname(model_path), encoder_file_name)
+                            os.makedirs(os.path.dirname(encoder_local_path), exist_ok=True)
+                            
+                            try:
+                                # Try to list files to find encoder hash
+                                encoder_dvc_file = encoder_path + '.dvc'
+                                if os.path.exists(encoder_dvc_file):
+                                    with open(encoder_dvc_file, 'r') as f:
+                                        dvc_content = f.read()
+                                        # Extract md5 hash from DVC file if it exists
+                                        import re
+                                        md5_match = re.search(r'md5: ([a-f0-9]+)', dvc_content)
+                                        if md5_match:
+                                            md5_hash = md5_match.group(1)
+                                            hash_prefix = md5_hash[:2]
+                                            hash_path = f'files/md5/{hash_prefix}/{md5_hash[2:]}'
+                                            st.info(f"Found encoder hash path: {hash_path}")
+                                            
+                                            try:
+                                                s3_client.download_file(
+                                                    'dvc-mlops',
+                                                    hash_path,
+                                                    encoder_local_path
+                                                )
+                                                with open(encoder_local_path, 'rb') as f:
+                                                    encoder = pickle.load(f)
+                                                encoder_found = True
+                                                st.success(f"Downloaded encoder from S3 using hash")
+                                            except Exception as e:
+                                                st.warning(f"Could not download encoder using hash: {str(e)}")
+                            except Exception as e:
+                                st.warning(f"Error looking for encoder DVC file: {str(e)}")
+                                
+                            # Try common paths if hash approach didn't work
+                            if not encoder_found:
+                                possible_encoder_paths = [
+                                    f'models/{encoder_file_name}',
+                                    encoder_file_name,
+                                    f'encoders/{encoder_file_name}'
+                                ]
+                                
+                                for s3_path in possible_encoder_paths:
+                                    try:
+                                        s3_client.download_file(
+                                            'dvc-mlops',
+                                            s3_path,
+                                            encoder_local_path
+                                        )
+                                        with open(encoder_local_path, 'rb') as f:
+                                            encoder = pickle.load(f)
+                                        encoder_found = True
+                                        st.success(f"Downloaded encoder from path: {s3_path}")
+                                        break
+                                    except Exception as e:
+                                        st.warning(f"Could not download encoder from {s3_path}")
+                                        
+                        # If encoder was found by any method, use it
+                        if encoder_found:
                             pipeline.steps[0] = (pipeline.steps[0][0], encoder)
-                            st.success("Successfully loaded and integrated encoder into pipeline")
+                            st.success("Successfully integrated encoder into pipeline")
                         else:
-                            st.error(f"Encoder file not found: {encoder_path}")
-                            # Use our demo encoder
-                            pipeline.steps[0] = (pipeline.steps[0][0], MentoPredEncoder())
-                            st.warning("Using demo encoder instead")
+                            # Create a more comprehensive encoder based on your specific needs
+                            st.warning("Creating a custom encoder to match your production requirements")
+                            encoder = MentoPredEncoder()
+                            # Add specific encoder settings from your training data
+                            encoder.gender_mapping = {'male': 0, 'female': 1, 'other': 2}
+                            encoder.work_interfere_mapping = {'Never': 1, 'Rarely': 2, 'Sometimes': 3, 'Often': 4, 'Unknown': 0}
+                            encoder.no_employees_mapping = {'1-5': 0, '6-25': 1, '26-100': 2, '100-500': 3, '500-1000': 4, 'More than 1000': 5}
+                            encoder.leave_mapping = {"Don't know": 2, 'Very difficult': 0, 'Somewhat difficult': 1, 'Somewhat easy': 3, 'Very easy': 4}
+                            
+                            # Assign columns from loaded pipeline if available
+                            if len(pipeline.steps) > 1 and hasattr(pipeline.steps[1][1], 'feature_names_in_'):
+                                encoder.expected_columns = pipeline.steps[1][1].feature_names_in_
+                            
+                            # Replace encoder in pipeline
+                            pipeline.steps[0] = (pipeline.steps[0][0], encoder)
+                            st.warning("Using custom encoder instead")
                     except Exception as e:
-                        st.error(f"Error loading encoder: {str(e)}")
+                        st.error(f"Error handling encoder: {str(e)}")
                         # Use our demo encoder
                         pipeline.steps[0] = (pipeline.steps[0][0], MentoPredEncoder())
                         st.warning("Using demo encoder due to error")
