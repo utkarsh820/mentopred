@@ -6,7 +6,7 @@ authors = [
     {name = "Utkarsh Pandey"}
 ]
 license = {text = "MIT"}
-readme = "README.md"
+readme = "../README.md"
 requires-python = "3.13.7"
 dependencies = [
     "xgboost (>=3.0.5,<4.0.0)",
